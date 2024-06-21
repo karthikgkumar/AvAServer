@@ -2,5 +2,4 @@ fastapi
 reportlab
 pydantic
 openai
-ast
-dotenv
+python-dotenv
