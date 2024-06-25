@@ -3,3 +3,5 @@ reportlab
 pydantic
 openai
 python-dotenv
+python-pptx
+requests
