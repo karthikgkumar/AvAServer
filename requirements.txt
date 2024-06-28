@@ -1,7 +1,10 @@
 fastapi
 reportlab
-pydantic
 openai
+pydantic
 python-dotenv
 python-pptx
 requests
+mangum
+matplotlib
+numpy
