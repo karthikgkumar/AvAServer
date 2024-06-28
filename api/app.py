@@ -33,7 +33,12 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, ListFlowabl
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus.tableofcontents import TableOfContents
-os.environ['MPLCONFIGDIR'] = os.getcwd() + "/configs/"
+# Set MPLCONFIGDIR to a writable directory in /tmp
+os.environ['MPLCONFIGDIR'] = '/tmp/matplotlib'
+
+# Ensure the directory exists
+if not os.path.exists('/tmp/matplotlib'):
+    os.makedirs('/tmp/matplotlib')
 import matplotlib.pyplot as plt
 import json
 import random
