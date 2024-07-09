@@ -20,33 +20,16 @@ from pptx.dml.color import RGBColor
 from pptx import Presentation
 load_dotenv()  # This loads the variables from .env
 from fastapi.responses import StreamingResponse
-from mangum import Mangum
 from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.lib.colors import HexColor, white
+from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER, TA_LEFT
 from io import BytesIO
-import logging
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, ListFlowable, ListItem, Image
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.lib.styles import ParagraphStyle
-from reportlab.platypus.tableofcontents import TableOfContents
-# Set MPLCONFIGDIR to a writable directory in /tmp
-os.environ['MPLCONFIGDIR'] = '/tmp/matplotlib'
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 
-# Ensure the directory exists
-if not os.path.exists('/tmp/matplotlib'):
-    os.makedirs('/tmp/matplotlib')
-import matplotlib.pyplot as plt
 import json
-import random
-import re
+
 
 app=FastAPI()
-handler=Mangum(app)
-
 
 class QuestionRequest(BaseModel):
     role: str
@@ -432,259 +415,259 @@ async def create_presentation(request: PresentationRequest):
         raise HTTPException(status_code=500, detail=str(e))
     
 
-class PDFCreationRequest(BaseModel):
-    topic: str
-    num_pages: int
+# class PDFCreationRequest(BaseModel):
+#     topic: str
+#     num_pages: int
 
-class PDFCreationResponse(BaseModel):
-    message: str
+# class PDFCreationResponse(BaseModel):
+#     message: str
 
-@app.post("/create_pdf")
-async def create_pdf_endpoint(request: PDFCreationRequest):
-    pdf_creation_tool = PDFCreationTool()
+# @app.post("/create_pdf")
+# async def create_pdf_endpoint(request: PDFCreationRequest):
+#     pdf_creation_tool = PDFCreationTool()
     
-    try:
-        # Create the PDF in memory
-        pdf_buffer = pdf_creation_tool._create_pdf(request.topic, request.num_pages)
+#     try:
+#         # Create the PDF in memory
+#         pdf_buffer = pdf_creation_tool._create_pdf(request.topic, request.num_pages)
         
-        # Return the file as a streaming response
-        return StreamingResponse(
-            pdf_buffer,
-            media_type="application/pdf",
-            headers={
-                "Content-Disposition": f'attachment; filename="{request.topic.replace(" ", "_")}_presentation.pdf"'
-            }
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+#         # Return the file as a streaming response
+#         return StreamingResponse(
+#             pdf_buffer,
+#             media_type="application/pdf",
+#             headers={
+#                 "Content-Disposition": f'attachment; filename="{request.topic.replace(" ", "_")}_presentation.pdf"'
+#             }
+#         )
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
 
-class PDFCreationTool:
+# class PDFCreationTool:
 
-    def _create_pdf(self, topic: str, num_pages: int) -> str:
-        logging.info(f"Creating PDF presentation: topic='{topic}', num_pages={num_pages}")
-        # Create a BytesIO object to store the PDF
-        pdf_buffer = BytesIO()
-        # Create the PDF document
-        doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
-        styles = getSampleStyleSheet()
-        story = []
+#     def _create_pdf(self, topic: str, num_pages: int) -> str:
+#         logging.info(f"Creating PDF presentation: topic='{topic}', num_pages={num_pages}")
+#         # Create a BytesIO object to store the PDF
+#         pdf_buffer = BytesIO()
+#         # Create the PDF document
+#         doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+#         styles = getSampleStyleSheet()
+#         story = []
 
-        # Custom styles (same as before)
-        title_style = ParagraphStyle(
-            'CustomTitle',
-            parent=styles['Heading1'],
-            fontSize=24,
-            textColor=HexColor('#00529A'),  # Dark blue
-            alignment=TA_CENTER,
-            spaceAfter=12
-        )
-        heading_style = ParagraphStyle(
-            'CustomHeading',
-            parent=styles['BodyText'],
-            fontSize=18,
-            textColor=HexColor('#00529A'),  # Dark blue
-            alignment=TA_LEFT,
-            spaceAfter=12
-        )
-        subheading_style = ParagraphStyle(
-            'CustomSubheading',
-            parent=styles['BodyText'],
-            fontSize=12,
-            textColor=HexColor('#009B77'),  # Green
-            alignment=TA_LEFT,
-            spaceAfter=8
-        )
-        body_style = ParagraphStyle(
-            'CustomBody',
-            parent=styles['BodyText'],
-            fontSize=12,
-            textColor=HexColor('#404040'),  # Dark gray
-            alignment=TA_JUSTIFY,
-            spaceAfter=12
-        )
-        # Add title
-        story.append(Paragraph(topic, title_style))
-        story.append(Spacer(1, 12))
+#         # Custom styles (same as before)
+#         title_style = ParagraphStyle(
+#             'CustomTitle',
+#             parent=styles['Heading1'],
+#             fontSize=24,
+#             textColor=HexColor('#00529A'),  # Dark blue
+#             alignment=TA_CENTER,
+#             spaceAfter=12
+#         )
+#         heading_style = ParagraphStyle(
+#             'CustomHeading',
+#             parent=styles['BodyText'],
+#             fontSize=18,
+#             textColor=HexColor('#00529A'),  # Dark blue
+#             alignment=TA_LEFT,
+#             spaceAfter=12
+#         )
+#         subheading_style = ParagraphStyle(
+#             'CustomSubheading',
+#             parent=styles['BodyText'],
+#             fontSize=12,
+#             textColor=HexColor('#009B77'),  # Green
+#             alignment=TA_LEFT,
+#             spaceAfter=8
+#         )
+#         body_style = ParagraphStyle(
+#             'CustomBody',
+#             parent=styles['BodyText'],
+#             fontSize=12,
+#             textColor=HexColor('#404040'),  # Dark gray
+#             alignment=TA_JUSTIFY,
+#             spaceAfter=12
+#         )
+#         # Add title
+#         story.append(Paragraph(topic, title_style))
+#         story.append(Spacer(1, 12))
 
-        # Generate and add title page image
-        title_image = self._generate_image(f"Abstract representation of {topic}")
-        story.append(Image(title_image, width=6*inch, height=4*inch))
-        # story.append(PageBreak())
+#         # Generate and add title page image
+#         title_image = self._generate_image(f"Abstract representation of {topic}")
+#         story.append(Image(title_image, width=6*inch, height=4*inch))
+#         # story.append(PageBreak())
 
-        for i in range(num_pages - 1):  # -1 because we already created the title page
-            logging.info(f"Creating page {i+2}/{num_pages}")
-            title, content = self._generate_content(topic, i + 2, num_pages)
+#         for i in range(num_pages - 1):  # -1 because we already created the title page
+#             logging.info(f"Creating page {i+2}/{num_pages}")
+#             title, content = self._generate_content(topic, i + 2, num_pages)
             
-            story.append(Paragraph(title, heading_style))
+#             story.append(Paragraph(title, heading_style))
             
-            # Process content
-            paragraphs = content.split('\n\n')
-            for para in paragraphs:
-                if para.startswith('- '):
-                    # Handle bullet points
-                    items = [ListItem(Paragraph(item[2:], body_style)) for item in para.split('\n- ')]
-                    story.append(ListFlowable(items, bulletType='bullet', start='circle'))
-                elif para.startswith('Subheading:'):
-                    # Handle subheadings
-                    subheading = para[11:]
-                    story.append(Paragraph(subheading, subheading_style))
-                else:
-                    # Regular paragraph with colored important words
-                    colored_para = self._color_important_words(para)
-                    story.append(Paragraph(colored_para, body_style))
+#             # Process content
+#             paragraphs = content.split('\n\n')
+#             for para in paragraphs:
+#                 if para.startswith('- '):
+#                     # Handle bullet points
+#                     items = [ListItem(Paragraph(item[2:], body_style)) for item in para.split('\n- ')]
+#                     story.append(ListFlowable(items, bulletType='bullet', start='circle'))
+#                 elif para.startswith('Subheading:'):
+#                     # Handle subheadings
+#                     subheading = para[11:]
+#                     story.append(Paragraph(subheading, subheading_style))
+#                 else:
+#                     # Regular paragraph with colored important words
+#                     colored_para = self._color_important_words(para)
+#                     story.append(Paragraph(colored_para, body_style))
             
-            # Generate and add visualization
-            chart_image = self._generate_visualization(topic, title)
-            if chart_image:
-                story.append(Spacer(1, 12))
-                story.append(Image(chart_image, width=6*inch, height=4*inch))
+#             # Generate and add visualization
+#             chart_image = self._generate_visualization(topic, title)
+#             if chart_image:
+#                 story.append(Spacer(1, 12))
+#                 story.append(Image(chart_image, width=6*inch, height=4*inch))
             
-            # Generate and add image for the current page
-            image_prompt = f"Illustration related to {title} in the context of {topic}"
-            page_image = self._generate_image(image_prompt)
-            story.append(Spacer(1, 12))
-            story.append(Image(page_image, width=5*inch, height=3*inch))
-            # story.append(PageBreak())
+#             # Generate and add image for the current page
+#             image_prompt = f"Illustration related to {title} in the context of {topic}"
+#             page_image = self._generate_image(image_prompt)
+#             story.append(Spacer(1, 12))
+#             story.append(Image(page_image, width=5*inch, height=3*inch))
+#             # story.append(PageBreak())
 
-        def add_page_numbers(canvas, doc):
-            page_num = canvas.getPageNumber()
-            text = f"Page {page_num}"
-            canvas.drawRightString(letter[0]-0.5*inch, 0.5*inch, text)
+#         def add_page_numbers(canvas, doc):
+#             page_num = canvas.getPageNumber()
+#             text = f"Page {page_num}"
+#             canvas.drawRightString(letter[0]-0.5*inch, 0.5*inch, text)
 
-        doc.build(story, onFirstPage=add_page_numbers, onLaterPages=add_page_numbers)
-        # Reset the buffer position to the beginning
-        pdf_buffer.seek(0)
+#         doc.build(story, onFirstPage=add_page_numbers, onLaterPages=add_page_numbers)
+#         # Reset the buffer position to the beginning
+#         pdf_buffer.seek(0)
         
-        return pdf_buffer
+#         return pdf_buffer
     
-    def _generate_image(self, prompt: str) -> BytesIO:
-        image_api_url=os.getenv('IMAGE_API_URL')
-        image_api_key=os.getenv('IMAGE_API_KEY')
-        headers_image_api = {"Authorization": f"Bearer {image_api_key}"}
-        data = {
-            "model": "SG161222/Realistic_Vision_V3.0_VAE",
-            "negative_prompt": "",
-            "prompt": prompt,
-            "width": 800,
-            "height": 800,
-            "steps": 33,
-            "n": 1,
-            "seed": 8000,
-        }
-        image_response = requests.post(
-            image_api_url, json=data, headers=headers_image_api
-        )
-        image_response.raise_for_status()
-        image_base64 = image_response.json()["output"]["choices"][0]["image_base64"]
-        image_bytes = base64.b64decode(image_base64)
-        logging.info("Image generated successfully")
-        return BytesIO(image_bytes)
+#     def _generate_image(self, prompt: str) -> BytesIO:
+#         image_api_url=os.getenv('IMAGE_API_URL')
+#         image_api_key=os.getenv('IMAGE_API_KEY')
+#         headers_image_api = {"Authorization": f"Bearer {image_api_key}"}
+#         data = {
+#             "model": "SG161222/Realistic_Vision_V3.0_VAE",
+#             "negative_prompt": "",
+#             "prompt": prompt,
+#             "width": 800,
+#             "height": 800,
+#             "steps": 33,
+#             "n": 1,
+#             "seed": 8000,
+#         }
+#         image_response = requests.post(
+#             image_api_url, json=data, headers=headers_image_api
+#         )
+#         image_response.raise_for_status()
+#         image_base64 = image_response.json()["output"]["choices"][0]["image_base64"]
+#         image_bytes = base64.b64decode(image_base64)
+#         logging.info("Image generated successfully")
+#         return BytesIO(image_bytes)
 
-    def _generate_content(self, topic: str, page_num: int, total_pages: int):
-        prompt = f"""
-        Create detailed and well-structured content for page {page_num} of a {total_pages}-page presentation about {topic}.
-        The content should be appropriate for a PDF presentation, including:
-        1. A clear and concise title for this page
-        2. Detailed information about a subtopic related to {topic}
-        3. Key points or facts
-        4. If applicable, a brief example or case study
+#     def _generate_content(self, topic: str, page_num: int, total_pages: int):
+#         prompt = f"""
+#         Create detailed and well-structured content for page {page_num} of a {total_pages}-page presentation about {topic}.
+#         The content should be appropriate for a PDF presentation, including:
+#         1. A clear and concise title for this page
+#         2. Detailed information about a subtopic related to {topic}
+#         3. Key points or facts
+#         4. If applicable, a brief example or case study
 
-        Format the response as follows:
-        Title: [Page Title]
-        Content: [Detailed content for the page]
+#         Format the response as follows:
+#         Title: [Page Title]
+#         Content: [Detailed content for the page]
 
-        Use paragraphs instead of bullet points where possible. If bullet points are necessary, use '- ' at the start of each point.
-        For subheadings, start the line with 'Subheading: '.
-        """
+#         Use paragraphs instead of bullet points where possible. If bullet points are necessary, use '- ' at the start of each point.
+#         For subheadings, start the line with 'Subheading: '.
+#         """
 
-        response = self._get_openai_response(prompt)
+#         response = self._get_openai_response(prompt)
         
-        lines = response.strip().split('\n')
-        title = lines[0].replace('Title: ', '')
-        content = '\n'.join(lines[2:]).replace('Content: ', '')
+#         lines = response.strip().split('\n')
+#         title = lines[0].replace('Title: ', '')
+#         content = '\n'.join(lines[2:]).replace('Content: ', '')
         
-        return title, content
+#         return title, content
     
-    def _generate_visualization(self, topic: str, title: str) -> Optional[BytesIO]:
-        try:
-            # Generate data for visualization
-            data_prompt = f"Generate sample data for a chart about '{title}' in the context of {topic}. Provide the data as a Python dictionary with 'x' and 'y' keys, where 'x' is a list of labels and 'y' is a list of corresponding values."
-            data_response = self._get_openai_response(data_prompt)
-            # Try to parse the JSON response
-            try:
-                data = json.loads(data_response)
-            except json.JSONDecodeError:
-                # If JSON parsing fails, use fallback data
-                logging.warning(f"Failed to parse JSON data for '{title}'. Using fallback data.")
-                data = self._generate_fallback_data(title)
+#     def _generate_visualization(self, topic: str, title: str) -> Optional[BytesIO]:
+#         try:
+#             # Generate data for visualization
+#             data_prompt = f"Generate sample data for a chart about '{title}' in the context of {topic}. Provide the data as a Python dictionary with 'x' and 'y' keys, where 'x' is a list of labels and 'y' is a list of corresponding values."
+#             data_response = self._get_openai_response(data_prompt)
+#             # Try to parse the JSON response
+#             try:
+#                 data = json.loads(data_response)
+#             except json.JSONDecodeError:
+#                 # If JSON parsing fails, use fallback data
+#                 logging.warning(f"Failed to parse JSON data for '{title}'. Using fallback data.")
+#                 data = self._generate_fallback_data(title)
 
-            # Ensure data has the correct structure
-            if not isinstance(data, dict) or 'x' not in data or 'y' not in data:
-                logging.warning(f"Invalid data structure for '{title}'. Using fallback data.")
-                data = self._generate_fallback_data(title)
+#             # Ensure data has the correct structure
+#             if not isinstance(data, dict) or 'x' not in data or 'y' not in data:
+#                 logging.warning(f"Invalid data structure for '{title}'. Using fallback data.")
+#                 data = self._generate_fallback_data(title)
 
-            # Create the chart
-            plt.figure(figsize=(8, 6))
-            plt.bar(data['x'], data['y'])
-            plt.title(title)
-            plt.xlabel('Categories')
-            plt.ylabel('Values')
-            plt.xticks(rotation=45, ha='right')
-            plt.tight_layout()
+#             # Create the chart
+#             plt.figure(figsize=(8, 6))
+#             plt.bar(data['x'], data['y'])
+#             plt.title(title)
+#             plt.xlabel('Categories')
+#             plt.ylabel('Values')
+#             plt.xticks(rotation=45, ha='right')
+#             plt.tight_layout()
 
-            # Save the chart to a BytesIO object
-            img_buffer = BytesIO()
-            plt.savefig(img_buffer, format='png')
-            img_buffer.seek(0)
-            plt.close()
+#             # Save the chart to a BytesIO object
+#             img_buffer = BytesIO()
+#             plt.savefig(img_buffer, format='png')
+#             img_buffer.seek(0)
+#             plt.close()
 
-            return img_buffer
-        except Exception as e:
-            return None
+#             return img_buffer
+#         except Exception as e:
+#             return None
         
-    def _generate_fallback_data(self, title: str) -> dict:
-        """Generate fallback data if the API response can't be parsed."""
-        return {
-            'x': [f'Category {i}' for i in range(1, 6)],
-            'y': [random.randint(1, 100) for _ in range(5)]
-        }
+#     def _generate_fallback_data(self, title: str) -> dict:
+#         """Generate fallback data if the API response can't be parsed."""
+#         return {
+#             'x': [f'Category {i}' for i in range(1, 6)],
+#             'y': [random.randint(1, 100) for _ in range(5)]
+#         }
 
-    def _color_important_words(self, text):
-        important_words = ['key', 'crucial', 'significant', 'essential', 'fundamental', 'critical', 'vital', 'important']
-        for word in important_words:
-            text = re.sub(f'\\b{word}\\b', f'<font color="#FF5733">{word}</font>', text, flags=re.IGNORECASE)
-        return text
+#     def _color_important_words(self, text):
+#         important_words = ['key', 'crucial', 'significant', 'essential', 'fundamental', 'critical', 'vital', 'important']
+#         for word in important_words:
+#             text = re.sub(f'\\b{word}\\b', f'<font color="#FF5733">{word}</font>', text, flags=re.IGNORECASE)
+#         return text
 
-    def _get_openai_response(self, prompt):
-        try:
-            openaiclient = openai.Client(
-                api_key=os.getenv('OPENAI_API_KEY'),
-                base_url=os.getenv('OPENAI_BASE_URL'),
-            )
-            syss = """
-            You are a helpful assistant that can create creative PDF presentations on various topics. 
-            The user may ask you to create a presentation on a specific topic with a certain number of pages. 
-            To create a PDF, use the 'create_pdf' tool with the 'topic' and 'num_pages' arguments.
-            For example, if the user says "Create a 5-page presentation about climate change", 
-            you should call the 'create_pdf' tool with topic="Climate Change" and num_pages=5.
-            Be sure to respond politely and let the user know if the PDF creation was successful or if there was an error.
-            """
+#     def _get_openai_response(self, prompt):
+#         try:
+#             openaiclient = openai.Client(
+#                 api_key=os.getenv('OPENAI_API_KEY'),
+#                 base_url=os.getenv('OPENAI_BASE_URL'),
+#             )
+#             syss = """
+#             You are a helpful assistant that can create creative PDF presentations on various topics. 
+#             The user may ask you to create a presentation on a specific topic with a certain number of pages. 
+#             To create a PDF, use the 'create_pdf' tool with the 'topic' and 'num_pages' arguments.
+#             For example, if the user says "Create a 5-page presentation about climate change", 
+#             you should call the 'create_pdf' tool with topic="Climate Change" and num_pages=5.
+#             Be sure to respond politely and let the user know if the PDF creation was successful or if there was an error.
+#             """
 
-            msg = [
-            {"role": "system", "content": syss},
-            {"role": "user", "content": prompt},
-        ]
-            response = openaiclient.chat.completions.create(
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.6,
-                model=os.getenv('OPENAI_MODEL'),
-                max_tokens=350,
-                stream=False,
-            )
-            return response.choices[0].message.content
-        except Exception as e:
-            return f"Error generating content: {e}"
+#             msg = [
+#             {"role": "system", "content": syss},
+#             {"role": "user", "content": prompt},
+#         ]
+#             response = openaiclient.chat.completions.create(
+#                 messages=[{"role": "user", "content": prompt}],
+#                 temperature=0.6,
+#                 model=os.getenv('OPENAI_MODEL'),
+#                 max_tokens=350,
+#                 stream=False,
+#             )
+#             return response.choices[0].message.content
+#         except Exception as e:
+#             return f"Error generating content: {e}"
     
 
 
